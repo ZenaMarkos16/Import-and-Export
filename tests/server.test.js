@@ -1,0 +1,15 @@
+import { test, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+let server, directory, base;
+before(async()=>{directory=await mkdtemp(join(tmpdir(),'zena-test-'));process.env.DATA_DIR=directory;({server}=await import('../server.js'));await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));base=`http://127.0.0.1:${server.address().port}`;});
+after(async()=>{await new Promise(resolve=>server.close(resolve));await rm(directory,{recursive:true,force:true});});
+const inquiry={name:'Test Buyer',email:'buyer@example.com',company:'Test Company',service:'Import inquiry',message:'Please discuss a test shipment requirement with us.',consent:true};
+const post=(body,headers={})=>fetch(base+'/api/inquiries',{method:'POST',headers:{'Content-Type':'application/json',...headers},body:JSON.stringify(body)});
+test('home page, scripts, logos and illustrations are served with correct types',async()=>{for(const [path,type] of [['/','text/html'],['/app.js','text/javascript'],['/styles.css','text/css'],['/assets/logo-dark.png','image/png'],['/assets/container.svg','image/svg+xml']]){const response=await fetch(base+path);assert.equal(response.status,200);assert.ok(response.headers.get('content-type').startsWith(type));assert.ok((await response.arrayBuffer()).byteLength>100);} });
+test('valid inquiry receives reference and persists accurate private record',async()=>{const response=await post(inquiry);assert.equal(response.status,201);const result=await response.json();assert.match(result.id,/^ZEN-[A-F0-9]{8}$/);const records=(await readFile(join(directory,'inquiries.jsonl'),'utf8')).trim().split('\n').map(JSON.parse);assert.equal(records[0].email,inquiry.email);assert.equal(records[0].id,result.id);assert.equal(records[0].consent,true);assert.equal((await fetch(base+'/.data/inquiries.jsonl')).status,404);});
+test('invalid fields and missing consent do not save an inquiry',async()=>{for(const fields of [{email:'invalid'},{message:'short'},{consent:false},{service:'Unknown'},{name:42}])assert.equal((await post({...inquiry,...fields})).status,422);});
+test('malformed, cross-origin, bot, and oversized requests are rejected',async()=>{assert.equal((await fetch(base+'/api/inquiries',{method:'POST',headers:{'Content-Type':'application/json'},body:'{'})).status,400);assert.equal((await post(inquiry,{Origin:'https://untrusted.example'})).status,403);assert.equal((await post({...inquiry,website:'bot.example'})).status,422);assert.equal((await post({...inquiry,message:'x'.repeat(18000)})).status,413);});
+test('rate limit bounds submissions and private source files are not served',async()=>{for(let i=0;i<9;i++)assert.equal((await post(inquiry)).status,201);assert.equal((await post(inquiry)).status,429);for(const path of ['/server.js','/package.json','/missing-page'])assert.equal((await fetch(base+path)).status,404);});
