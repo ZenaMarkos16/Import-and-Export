@@ -21,6 +21,10 @@ npm ci
 npm start
 ```
 
+## Preview with VS Code Live Server
+
+Right-click `public/index.html` and choose **Open with Live Server**. The design, images, animations, and interactive hero work when served at `/public/index.html` or with `public/` as the server root. The inquiry API requires `npm start`; Live Server alone cannot save inquiries.
+
 ## Verify
 
 ```sh
