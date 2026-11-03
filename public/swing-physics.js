@@ -1,44 +1,28 @@
-// Angles are radians; elapsed time is seconds. The pendulum has its own angular
-// velocity, so releasing the pointer removes the force without removing momentum.
+// A single angular degree of freedom keeps the suspension point fixed.
+// Angles are radians; time is seconds. No translation or vertical spring exists.
 export const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 export class SwingPhysics {
-  constructor() { this.maxAngle = .21; this.reset(); }
-  reset() {
-    this.angle = this.angularVelocity = this.x = this.y = this.vx = this.vy = 0;
-    this.targetAngle = this.targetX = this.targetY = 0;
-    this.dragging = false;
+  constructor() { this.maxAngle = .27; this.gravity = 12.25; this.reset(); }
+  reset() { this.angle = this.angularVelocity = this.targetAngle = 0; this.dragging = false; }
+  target(angle) { this.targetAngle = clamp(angle, -this.maxAngle * .8, this.maxAngle * .8); this.dragging = true; }
+  release(pointerVelocity) {
+    this.dragging = false; this.targetAngle = 0;
+    if (Number.isFinite(pointerVelocity)) this.angularVelocity = this.angularVelocity * .45 + pointerVelocity * .55;
+    // Bound release energy rather than abruptly bouncing off a rotation limit.
+    const speedLimit = Math.sqrt(Math.max(0, 2 * this.gravity * (Math.cos(this.angle) - Math.cos(this.maxAngle)))) * .96;
+    this.angularVelocity = clamp(this.angularVelocity, -speedLimit, speedLimit);
   }
-  target(angle = 0, x = 0, y = 0, dragging = false) {
-    this.targetAngle = clamp(angle, -this.maxAngle, this.maxAngle);
-    this.targetX = x; this.targetY = y; this.dragging = dragging;
-  }
-  release() { this.target(); }
   step(elapsed) {
-    // Substeps keep the solver stable across frame rates and background-tab gaps.
     let remaining = clamp(elapsed, 0, .05);
     while (remaining > 0) {
-      const dt = Math.min(remaining, 1 / 120); remaining -= dt;
-      const stiffness = this.dragging ? 105 : 19;
-      const damping = this.dragging ? 16 : 3.1;
-      const angularForce = this.dragging
-        ? stiffness * (this.targetAngle - this.angle)
-        : -stiffness * Math.sin(this.angle) + stiffness * this.targetAngle;
-      this.angularVelocity += (angularForce - damping * this.angularVelocity) * dt;
+      const dt = Math.min(remaining, 1 / 240); remaining -= dt;
+      const acceleration = this.dragging
+        ? 130 * (this.targetAngle - this.angle) - 21 * this.angularVelocity
+        : -this.gravity * Math.sin(this.angle) - .65 * this.angularVelocity;
+      this.angularVelocity += acceleration * dt;
       this.angle += this.angularVelocity * dt;
-      if (Math.abs(this.angle) > this.maxAngle * 1.16) { this.angle = Math.sign(this.angle) * this.maxAngle * 1.16; this.angularVelocity *= -.18; }
-      for (const [position, velocity, target] of [['x','vx','targetX'], ['y','vy','targetY']]) {
-        this[velocity] += ((this[target] - this[position]) * stiffness - damping * this[velocity]) * dt;
-        this[position] += this[velocity] * dt;
-      }
     }
-    if (this.atRest()) {
-      this.angle = this.targetAngle; this.x = this.targetX; this.y = this.targetY;
-      this.angularVelocity = this.vx = this.vy = 0;
-    }
+    if (this.atRest()) { this.angle = this.dragging ? this.targetAngle : 0; this.angularVelocity = 0; }
   }
-  atRest() {
-    return Math.abs(this.angle - this.targetAngle) < .00015 && Math.abs(this.angularVelocity) < .0005
-      && Math.abs(this.x - this.targetX) < .025 && Math.abs(this.y - this.targetY) < .025
-      && Math.abs(this.vx) < .08 && Math.abs(this.vy) < .08;
-  }
+  atRest() { return Math.abs(this.angle - (this.dragging ? this.targetAngle : 0)) < .00015 && Math.abs(this.angularVelocity) < .0005; }
 }

@@ -12,9 +12,10 @@ export function createHeroSwing(hero) {
   const abort = new AbortController();
   const on = (target, event, handler) => target.addEventListener(event, handler, { signal: abort.signal });
   let frame = 0, previousTime = 0, pointer = null, start = null, hovering = false, inView = true;
-  let limits = { x: 30, y: 35, height: 350 };
+  let height = 350;
+  let lastSample = null, releaseVelocity = 0;
   const paint = () => {
-    object.style.transform = `translate3d(${physics.x.toFixed(3)}px,${physics.y.toFixed(3)}px,0) rotate(${physics.angle.toFixed(6)}rad)`;
+    object.style.transform = `rotate(${physics.angle.toFixed(6)}rad)`;
   };
   function tick(time) {
     frame = 0;
@@ -41,44 +42,43 @@ export function createHeroSwing(hero) {
     const id = pointer; pointer = null; start = null;
     if (object.hasPointerCapture(id)) object.releasePointerCapture(id);
     object.classList.remove('is-dragging'); cursor.classList.remove('is-grabbing');
-    physics.release(); wake();
+    physics.release(event?.type === 'pointerup' && lastSample && performance.now() - lastSample.time < 120 ? releaseVelocity : undefined); wake();
+    lastSample = null; releaseVelocity = 0;
     if (!hovering || event?.type !== 'pointerup' || event.pointerType !== 'mouse') hideCursor();
   }
   function measure() {
     finish();
     // Offsets measure the untransformed image, preventing feedback while rotating.
-    limits = { x: Math.min(44, stage.clientWidth * .035, Math.max(0, (stage.clientWidth - object.offsetWidth) * .175)), y: Math.min(36, stage.clientWidth * .04), height: object.offsetHeight || 350 };
-    const clearance = (stage.clientWidth - object.offsetWidth) / 2 - limits.x - 8;
-    physics.maxAngle = Math.min(.21, Math.max(.02, Math.atan2(Math.max(0, clearance), limits.height) * .82));
-    stage.style.setProperty('--swing-clearance', `${Math.ceil(object.offsetWidth * .5 * Math.sin(physics.maxAngle * 1.16) + limits.y + 36)}px`);
+    height = object.offsetHeight || 350;
+    const clearance = (stage.clientWidth - object.offsetWidth) / 2 - 6;
+    physics.maxAngle = Math.min(.27, Math.max(.025, Math.atan2(Math.max(0, clearance), height) * .9));
+    stage.style.setProperty('--swing-clearance', `${Math.ceil(object.offsetWidth * .5 * Math.sin(physics.maxAngle) + 28)}px`);
     physics.reset(); paint(); hideCursor();
   }
-  on(hero, 'pointermove', event => {
-    if (pointer !== null || !inView || reducedMotion.matches || event.pointerType !== 'mouse') return;
-    const rect = hero.getBoundingClientRect();
-    const horizontal = clamp((event.clientX - rect.left) / rect.width * 2 - 1, -1, 1);
-    const vertical = clamp((event.clientY - rect.top) / rect.height * 2 - 1, -1, 1);
-    physics.target(-horizontal * .025, horizontal * limits.x * .12, vertical * limits.y * .12);
-    wake();
-  });
-  on(hero, 'pointerleave', () => { if (pointer === null) { physics.release(); wake(); hideCursor(); } });
+  on(hero, 'pointerleave', () => { if (pointer === null) hideCursor(); });
   on(object, 'pointerenter', event => { hovering = true; showCursor(event); });
   on(object, 'pointerleave', () => { hovering = false; if (pointer === null) hideCursor(); });
   on(object, 'pointerdown', event => {
     if (reducedMotion.matches || pointer !== null || !event.isPrimary || event.button !== 0) return;
     event.preventDefault();
     pointer = event.pointerId;
-    start = { x: event.clientX, y: event.clientY, angle: physics.angle, offsetX: physics.x, offsetY: physics.y };
+    start = { x: event.clientX, angle: physics.angle };
+    lastSample = { time: performance.now(), angle: physics.angle }; releaseVelocity = 0;
     object.setPointerCapture(pointer); object.focus({ preventScroll: true });
     object.classList.add('is-dragging'); cursor.classList.add('is-grabbing');
-    showCursor(event); physics.target(physics.angle, physics.x, physics.y, true); wake();
+    showCursor(event); physics.target(physics.angle); wake();
   });
   on(object, 'pointermove', event => {
     if (pointer === event.pointerId && start) {
-      const dx = event.clientX - start.x, dy = event.clientY - start.y;
-      physics.target(start.angle - dx / Math.max(limits.height, 150) * .65,
-        clamp(start.offsetX + dx * .16, -limits.x, limits.x),
-        clamp(start.offsetY + dy * .32, -limits.y, limits.y), true);
+      const angle = clamp(start.angle - (event.clientX - start.x) / Math.max(height, 150), -physics.maxAngle * .8, physics.maxAngle * .8);
+      const now = performance.now();
+      const elapsed = (now - lastSample.time) / 1000;
+      if (elapsed > .003) {
+        const velocity = clamp((angle - lastSample.angle) / elapsed, -1.5, 1.5);
+        releaseVelocity = releaseVelocity * .25 + velocity * .75;
+        lastSample = { time: now, angle };
+      }
+      physics.target(angle);
       wake();
     }
     if (hovering || pointer === event.pointerId) showCursor(event);
@@ -87,12 +87,10 @@ export function createHeroSwing(hero) {
   on(object, 'dragstart', event => event.preventDefault());
   on(object, 'keydown', event => {
     if (event.key === 'Escape') { finish(); physics.release(); wake(); hideCursor(); return; }
-    if (reducedMotion.matches || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(event.key)) return;
+    if (reducedMotion.matches || !['ArrowLeft','ArrowRight',' '].includes(event.key)) return;
     event.preventDefault();
     if (event.key === 'ArrowLeft') physics.angularVelocity = clamp(physics.angularVelocity + .3, -.65, .65);
     else if (event.key === 'ArrowRight') physics.angularVelocity = clamp(physics.angularVelocity - .3, -.65, .65);
-    else if (event.key === 'ArrowUp') physics.vy = clamp(physics.vy - 40, -70, 70);
-    else if (event.key === 'ArrowDown') physics.vy = clamp(physics.vy + 40, -70, 70);
     else physics.angularVelocity = clamp(physics.angularVelocity + .35, -.65, .65);
     physics.release(); wake();
   });
@@ -102,7 +100,7 @@ export function createHeroSwing(hero) {
     finish(); physics.reset(); paint(); hideCursor();
     object.setAttribute('aria-disabled', String(reducedMotion.matches));
     object.tabIndex = reducedMotion.matches ? -1 : 0;
-    hint.textContent = reducedMotion.matches ? 'MOTION REDUCED · RESTING IN PLACE' : 'GRAB, DRAG & LET GO · OR USE ARROW KEYS';
+    hint.textContent = reducedMotion.matches ? 'MOTION REDUCED · RESTING IN PLACE' : 'PULL LEFT OR RIGHT & RELEASE · ← → KEYS';
     if (reducedMotion.matches) { cancelAnimationFrame(frame); frame = 0; object.classList.remove('is-moving'); }
   }
   on(reducedMotion, 'change', motionChanged);
