@@ -37,6 +37,14 @@ export function createHeroSwing(hero) {
     cursor.style.left = `${event.clientX}px`; cursor.style.top = `${event.clientY}px`;
   }
   function hideCursor() { cursor.classList.remove('is-visible'); object.classList.remove('has-swing-cursor'); }
+  function followMouse(event) {
+    if (event.pointerType !== 'mouse' || pointer !== null || reducedMotion.matches) return;
+    const bounds = object.getBoundingClientRect();
+    if (!bounds.width) return;
+    const horizontalPosition = clamp((event.clientX - bounds.left) / bounds.width, 0, 1);
+    physics.target((.5 - horizontalPosition) * physics.maxAngle * 1.35);
+    wake();
+  }
   function finish(event) {
     if (pointer === null || (event?.pointerId !== undefined && event.pointerId !== pointer)) return;
     const id = pointer; pointer = null; start = null;
@@ -56,8 +64,11 @@ export function createHeroSwing(hero) {
     physics.reset(); paint(); hideCursor();
   }
   on(hero, 'pointerleave', () => { if (pointer === null) hideCursor(); });
-  on(object, 'pointerenter', event => { hovering = true; showCursor(event); });
-  on(object, 'pointerleave', () => { hovering = false; if (pointer === null) hideCursor(); });
+  on(object, 'pointerenter', event => { hovering = true; showCursor(event); followMouse(event); });
+  on(object, 'pointerleave', () => {
+    hovering = false;
+    if (pointer === null) { physics.release(); wake(); hideCursor(); }
+  });
   on(object, 'pointerdown', event => {
     if (reducedMotion.matches || pointer !== null || !event.isPrimary || event.button !== 0) return;
     event.preventDefault();
@@ -80,6 +91,8 @@ export function createHeroSwing(hero) {
       }
       physics.target(angle);
       wake();
+    } else if (pointer === null && hovering) {
+      followMouse(event);
     }
     if (hovering || pointer === event.pointerId) showCursor(event);
   });
