@@ -32,7 +32,7 @@
 /* Hero scroll composition and editorial trade journey. */
 .hero-story{position:relative;isolation:isolate}
 .hero-story>.hero{position:sticky;top:0;z-index:0;display:block;height:100vh;height:100svh;min-height:600px;padding:0 5%;overflow:visible}
-.hero .cargo-stage{position:absolute;top:12vh;left:50%;right:auto;z-index:3;display:flex;align-items:flex-start;justify-content:center;width:120vw;height:70%;min-height:0;margin:0;padding:0;isolation:isolate;pointer-events:none;transform:translateX(-50%)}
+.hero .cargo-stage{position:absolute;top:clamp(68px,8vh,88px);left:50%;right:auto;z-index:3;display:flex;align-items:flex-start;justify-content:center;width:100vw;height:70%;min-height:0;margin:0;padding:0;isolation:isolate;pointer-events:none;transform:translateX(-50%)}
 .hero .swing-object{position:relative;z-index:2;width:min(88vw,1240px);margin:0 auto;pointer-events:auto}
 .hero .hero-container{position:absolute;left:0;top:0;width:100%;height:auto;max-width:100%;animation:none;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .hero h1{position:absolute;top:12%;left:2%;right:2%;z-index:1;margin:0;padding:0;font-family:Poppins,Arial,Helvetica,sans-serif;font-size:clamp(56px,8.1vw,122px);font-weight:800;font-style:normal;line-height:.94;letter-spacing:-.065em;text-align:center;text-transform:uppercase;pointer-events:none;transform:translate3d(0,var(--hero-title-shift,0px),0);will-change:transform}
@@ -40,19 +40,12 @@
 .hero h1>span:nth-child(2){animation-delay:.14s}
 .hero h1>span:first-child{color:#738069}
 .hero h1>span:last-child{color:var(--ink)}
-.hero .hero-intro{position:absolute;top:43%;left:5%;right:5%;bottom:auto;z-index:5;width:90%;max-width:1150px;margin:0 auto}
-.hero .hero-intro p{max-width:205px;font-size:clamp(10px,1vw,13px);line-height:1.45}
+.hero .hero-intro{position:absolute;top:43%;left:4%;right:4%;bottom:auto;z-index:5;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:24px;width:92%;max-width:1150px;margin:0 auto}
+.hero .hero-intro p{width:min(18vw,205px);max-width:100%;font-size:clamp(10px,1vw,13px);line-height:1.5;text-wrap:pretty}
+.hero .round-link{justify-self:end}
 .hero>.swing-hint{position:absolute;left:50%;bottom:51px;z-index:4;display:block;margin:0;transform:translateX(-50%);text-align:center;white-space:nowrap}
 .hero .swing-object:focus-visible{outline:0;box-shadow:none}
 .hero .swing-object:focus-visible .hero-container{filter:drop-shadow(0 0 4px #ed602b99) drop-shadow(0 16px 8px #1d201e0a)}
-.hero-ribbons{position:absolute;top:77%;left:50%;z-index:7;width:100%;height:112px;transform:translateX(-50%);pointer-events:none}
-.hero-ribbon{position:absolute;left:50%;display:flex;align-items:center;width:112vw;height:38px;overflow:hidden;background:#171914;color:var(--paper);transform-origin:center;}
-.hero-ribbon-one{top:5px;transform:translateX(-50%) rotate(4deg)}
-.hero-ribbon-two{top:52px;transform:translateX(-50%) rotate(-4deg)}
-.hero-ribbon-track{display:flex;align-items:center;width:max-content;white-space:nowrap;font:italic 12px/1 monospace;letter-spacing:1px;animation:marquee 28s linear infinite}
-.hero-ribbon-two .hero-ribbon-track{animation-direction:reverse;animation-duration:34s}
-.hero-ribbon-track span{flex:none;padding-right:24px}
-.hero-ribbon:hover .hero-ribbon-track{animation-play-state:paused}
 @keyframes hero-title-reveal{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:translateY(0)}}
 .trade-journey{position:relative;z-index:2;min-height:100vh;min-height:100svh;background:var(--ink);color:var(--paper)}
 .journey-shell{width:min(100%,1440px);margin:0 auto;padding:clamp(105px,12svh,142px) 0 clamp(48px,7svh,76px)}
@@ -99,20 +92,15 @@
 }
 @media(max-width:680px){
  .hero-story>.hero{min-height:580px;padding:0 5%}
- .hero .cargo-stage{top:19%;height:66%}
+ .hero .cargo-stage{top:clamp(68px,8vh,88px);height:66%}
  .hero .swing-object{width:min(94vw,700px)}
  .hero h1{top:16%;left:0;right:0;font-size:clamp(28px,8.7vw,38px);line-height:1.04;letter-spacing:-.06em}
  .hero h1>span{white-space:nowrap}
- .hero .hero-intro{top:45%;left:4%;right:4%;bottom:auto;width:92%;align-items:center;margin:0 auto}
- .hero .hero-intro p{width:31%;max-width:150px;font-size:8px;line-height:1.35}
+ .hero .hero-intro{top:45%;left:4%;right:4%;bottom:auto;grid-template-columns:minmax(0,1fr) auto;gap:12px;width:92%;align-items:center;margin:0 auto}
+ .hero .hero-intro p{width:auto;max-width:120px;font-size:8px;line-height:1.4}
  .hero .round-link{gap:6px;font-size:8px}
  .hero .round-link b{width:38px;height:38px}
  .hero>.swing-hint{bottom:12px;font-size:6px;letter-spacing:.3px}
- .hero-ribbons{top:76%;height:90px}
- .hero-ribbon{height:31px}
- .hero-ribbon-one{top:4px}
- .hero-ribbon-two{top:42px}
- .hero-ribbon-track{font-size:9px;letter-spacing:.6px}
  .journey-shell{padding:100px 0 48px}
  .journey-topline{font-size:7px;letter-spacing:.65px;gap:15px}
  .journey-topline span:last-child{max-width:145px;text-align:right}
@@ -134,6 +122,6 @@
 @media(prefers-reduced-motion:reduce){
  .hero h1{will-change:auto;transform:none!important}
  .hero h1>span{animation:none}
- .hero-ribbon-track{animation:none}
  .journey-visual.reveal,.journey-step.reveal{transition:none}
 }
+html{overflow-x:clip}
