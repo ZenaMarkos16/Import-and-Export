@@ -23,8 +23,8 @@
 @media(max-width:800px){.hero{padding-top:100px}.hero .cargo-stage{top:-20px;padding-top:0}.hero h1{padding-top:110px;margin-top:30px;font-size:10.2vw}.hero .hero-intro{margin-top:55px}.hero .swing-hint{font-size:6px}}
 @media(max-width:560px){.hero{padding-top:90px}.hero .cargo-stage{top:-15px;padding-top:0}.hero .swing-object{width:82%}.hero h1{padding-top:20px;margin:5px -3% 0;font-size:10.8vw;font-weight:800;line-height:1.08;letter-spacing:-.065em}.hero h1>span{white-space:nowrap}.hero .hero-intro{margin-top:65px;margin-bottom:28px}.hero .swing-hint{bottom:5px;font-size:5px;letter-spacing:.2px}}
 
-.hero>.swing-hint{position:relative;display:block;left:auto;bottom:auto;transform:none;text-align:center;margin:22px 0 0;z-index:4;font-size:8px}.hero .hero-intro{margin-top:32px}
-@media(max-width:560px){.hero .hero-meta{visibility:hidden}.hero>.swing-hint{margin-top:20px;font-size:6px}.hero .hero-intro{margin-top:30px}}
+.hero>.swing-hint{position:relative;display:block;left:auto;bottom:auto;transform:none;text-align:center;margin:22px 0 0;z-index:4;font-size:8px}.hero .hero-intro{top:clamp(108px,15vh,145px);margin:0 auto}
+@media(max-width:560px){.hero>.swing-hint{margin-top:20px;font-size:6px}.hero .hero-intro{top:94px;margin:0 auto}}
 
 @font-face{font-family:Poppins;src:url("./assets/fonts/Poppins-ExtraBold.ttf") format("truetype");font-weight:800;font-style:normal;font-display:swap}.hero h1{font-family:Poppins,Arial,Helvetica,sans-serif}
 
@@ -32,17 +32,15 @@
 /* Hero scroll composition and editorial trade journey. */
 .hero-story{position:relative;isolation:isolate}
 .hero-story>.hero{position:sticky;top:0;z-index:0;display:block;height:100vh;height:100svh;min-height:600px;padding:0 5%;overflow:visible}
-.hero .hero-meta{position:absolute;top:clamp(98px,14vh,140px);left:5%;right:5%;z-index:4;margin:0}
-.hero .cargo-stage{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;align-items:flex-start;justify-content:center;width:100%;height:70%;min-height:0;margin:0;padding:0;isolation:isolate;pointer-events:none}
-.hero .swing-object{position:relative;z-index:2;width:min(78%,1100px,96svh);margin:0 auto;pointer-events:auto}
+.hero .cargo-stage{position:absolute;top:0;left:50%;right:auto;z-index:3;display:flex;align-items:flex-start;justify-content:center;width:120vw;height:70%;min-height:0;margin:0;padding:0;isolation:isolate;pointer-events:none;transform:translateX(-50%)}
+.hero .swing-object{position:relative;z-index:2;width:min(100vw,1500px);margin:0 auto;pointer-events:auto}
 .hero .hero-container{position:absolute;left:0;top:0;width:100%;height:auto;max-width:100%;animation:none;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .hero h1{position:absolute;top:56%;left:2%;right:2%;z-index:1;margin:0;padding:0;font-family:Poppins,Arial,Helvetica,sans-serif;font-size:clamp(56px,8.1vw,122px);font-weight:800;font-style:normal;line-height:.94;letter-spacing:-.065em;text-align:center;text-transform:uppercase;pointer-events:none;transform:translate3d(0,var(--hero-title-shift,0px),0);will-change:transform}
 .hero h1>span{animation:none;white-space:nowrap}
 .hero h1>span:first-child{color:#738069}
 .hero h1>span:last-child{color:var(--ink)}
-.hero .hero-intro{position:absolute;left:5%;right:5%;bottom:78px;z-index:4;width:90%;max-width:1150px;margin:0 auto}
+.hero .hero-intro{position:absolute;top:clamp(108px,15vh,145px);left:5%;right:5%;bottom:auto;z-index:4;width:90%;max-width:1150px;margin:0 auto}
 .hero>.swing-hint{position:absolute;left:50%;bottom:51px;z-index:4;display:block;margin:0;transform:translateX(-50%);text-align:center;white-space:nowrap}
-.hero .hero-bottom{position:absolute;left:5%;right:5%;bottom:0;z-index:4}
 .hero .swing-object:focus-visible{outline:0;box-shadow:none}
 .hero .swing-object:focus-visible .hero-container{filter:drop-shadow(0 0 4px #ed602b99) drop-shadow(0 16px 8px #1d201e0a)}
 .trade-journey{position:relative;z-index:2;min-height:100vh;min-height:100svh;background:var(--ink);color:var(--paper)}
@@ -81,7 +79,7 @@
 .journey-visual.reveal,.journey-step.reveal{transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:960px){
- .hero .swing-object{width:min(88%,1000px,96svh)}
+ .hero .swing-object{width:min(100vw,1500px)}
  .journey-layout{grid-template-columns:minmax(0,1fr) minmax(300px,.92fr);gap:34px}
  .journey-visual{min-height:470px}
  .journey-intro h2{font-size:clamp(38px,5vw,54px)}
@@ -90,17 +88,15 @@
 }
 @media(max-width:680px){
  .hero-story>.hero{min-height:580px;padding:0 5%}
- .hero .hero-meta{top:95px;left:5%;right:5%}
  .hero .cargo-stage{top:4px;height:66%}
- .hero .swing-object{width:min(100%,90svh)}
+ .hero .swing-object{width:min(100vw,1500px)}
  .hero h1{top:37%;left:0;right:0;font-size:clamp(28px,8.7vw,38px);line-height:1.04;letter-spacing:-.06em}
  .hero h1>span{white-space:nowrap}
- .hero .hero-intro{left:5%;right:5%;bottom:78px;width:90%;align-items:flex-end}
+ .hero .hero-intro{top:94px;left:5%;right:5%;bottom:auto;width:90%;align-items:flex-end;margin:0 auto}
  .hero .hero-intro p{font-size:10px}
  .hero .round-link{gap:8px;font-size:9px}
  .hero .round-link b{width:38px;height:38px}
  .hero>.swing-hint{bottom:51px;font-size:6px;letter-spacing:.3px}
- .hero .hero-bottom{left:5%;right:5%;font-size:7px;letter-spacing:.4px}
  .journey-shell{padding:100px 0 48px}
  .journey-topline{font-size:7px;letter-spacing:.65px;gap:15px}
  .journey-topline span:last-child{max-width:145px;text-align:right}
